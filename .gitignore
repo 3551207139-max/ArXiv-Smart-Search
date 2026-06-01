@@ -29,6 +29,7 @@ runtime_logs/
 
 # Data files generated locally
 data/*.db
+!data/arxiv.db
 data/*.sqlite
 data/*.sqlite3
 data/*.json
