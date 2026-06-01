@@ -1059,6 +1059,16 @@ if st.session_state.page == "detail" and st.session_state.selected_paper:
     </div>
     """, unsafe_allow_html=True)
 
+    raw_arxiv_id = (paper.get("id") or "").strip()
+    if raw_arxiv_id:
+        arxiv_abs_url = f"https://arxiv.org/abs/{raw_arxiv_id}"
+        arxiv_pdf_url = f"https://arxiv.org/pdf/{raw_arxiv_id}"
+        link_col1, link_col2, link_col3 = st.columns([1, 1, 4])
+        with link_col1:
+            st.link_button("arXiv 摘要页", arxiv_abs_url, use_container_width=True)
+        with link_col2:
+            st.link_button("PDF 原文", arxiv_pdf_url, use_container_width=True)
+
     # Content grid: abstract + metadata
     col_left, col_right = st.columns([2, 1])
 
