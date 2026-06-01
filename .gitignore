@@ -1,0 +1,42 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Streamlit and runtime output
+.streamlit/
+runtime_logs/
+*.log
+
+# Local model/search artifacts
+*.npy
+*.npz
+*.index
+*.faiss
+*.pkl
+*.joblib
+
+# Data files generated locally
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+data/*.json
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

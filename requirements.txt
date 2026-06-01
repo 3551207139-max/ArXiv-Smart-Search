@@ -1,0 +1,9 @@
+# requirements.txt
+streamlit
+scikit-learn
+rank_bm25
+sentence-transformers
+pymysql
+cryptography
+faiss-cpu
+openai>=1.0.0
