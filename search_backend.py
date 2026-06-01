@@ -1,10 +1,15 @@
 # search_backend.py
 import json
 import re
+import sqlite3
+import logging
+from pathlib import Path
 from typing import List, Dict, Optional, Set
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
+
+logger = logging.getLogger(__name__)
 
 # 全局停用词集合
 ENGLISH_STOP_WORDS = {
@@ -623,3 +628,29 @@ def load_from_mysql(max_docs: Optional[int] = None) -> List[Dict]:
     cursor.close()
     conn.close()
     return docs
+
+
+def load_from_sqlite(db_path: str = "data/arxiv.db", max_docs: Optional[int] = None) -> List[Dict]:
+    """从本地 SQLite 数据库加载论文，字段格式与 MySQL/JSONL 保持一致。"""
+    path = Path(db_path)
+    if not path.exists():
+        raise FileNotFoundError(f"SQLite 数据库文件不存在: {db_path}")
+
+    conn = sqlite3.connect(str(path))
+    conn.row_factory = sqlite3.Row
+    try:
+        limit_clause = "LIMIT ?" if max_docs and max_docs > 0 else ""
+        sql = f"SELECT id, title, abstract, authors, categories, update_date, doi FROM papers {limit_clause}"
+        rows = conn.execute(sql, (int(max_docs),) if limit_clause else ()).fetchall()
+        return [dict(row) for row in rows]
+    finally:
+        conn.close()
+
+
+def load_from_database(max_docs: Optional[int] = None, sqlite_path: str = "data/arxiv.db") -> List[Dict]:
+    """优先读取 MySQL；连接失败时自动回退到随项目提交的 SQLite 数据库。"""
+    try:
+        return load_from_mysql(max_docs=max_docs)
+    except Exception as exc:
+        logger.warning("MySQL 加载失败，回退到 SQLite: %s", exc)
+        return load_from_sqlite(sqlite_path, max_docs=max_docs)

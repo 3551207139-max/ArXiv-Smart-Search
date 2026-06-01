@@ -10,7 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import streamlit as st
-from search_backend import load_jsonl, load_from_mysql, make_title_abstract_field, SearchEngine
+from search_backend import load_jsonl, load_from_database, make_title_abstract_field, SearchEngine
 from database.clean_text import clean_text
 from ai_search import AISearchEngine, AISearchConfig, DEFAULT_DEEPSEEK_BASE_URL, DEFAULT_DEEPSEEK_MODEL
 
@@ -811,7 +811,7 @@ for key, default in [
 @st.cache_resource
 def load_engine(data_source, max_docs):
     if data_source == "__mysql__":
-        docs = load_from_mysql(max_docs=None if max_docs == 0 else int(max_docs))
+        docs = load_from_database(max_docs=None if max_docs == 0 else int(max_docs))
     else:
         docs = load_jsonl(data_source, max_docs=None if max_docs == 0 else int(max_docs))
     docs = make_title_abstract_field(docs)
