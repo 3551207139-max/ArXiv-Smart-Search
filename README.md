@@ -1,111 +1,171 @@
-<!-- README.md -->
-# ArXiv 检索对比 Demo
+# ArXiv Smart Search：论文推荐与检索系统
 
-快速运行（建议在虚拟环境中）:
+这是一个面向课程项目的 arXiv 论文检索与推荐系统。项目基于 20000 条 arXiv 论文样例数据，提供关键词检索、语义检索、高级检索、相似论文推荐，以及基于 DeepSeek API 的查询改写、结果综述和追问功能。
 
-```bash
-pip install -r requirements.txt
-streamlit run app_streamlit.py
+## 主要功能
+
+- 多种检索算法：TF-IDF、BM25、Sentence-BERT。
+- 高级检索：支持按标题、作者、摘要、分类、日期范围和排除词过滤。
+- 论文详情页：展示标题、作者、摘要、分类、更新时间，并给出相似论文推荐。
+- 增强检索：可调用 DeepSeek API，将中文自然语言问题改写为英文检索关键词。
+- RAG 结果综述：基于 Top 10 检索结果生成简要分析。
+- 结果追问：可围绕当前检索结果继续提问。
+- 数据库模式：优先连接 MySQL；如果 MySQL 不可用，会自动回退到本地 SQLite 文件 `data/arxiv.db`。
+- 前端界面：使用 Streamlit 实现，包含低饱和度学术风格界面、固定标题栏、侧边栏配置和结果卡片。
+
+## 仓库内容
+
+```text
+app_streamlit.py                  Streamlit 前端入口
+search_backend.py                 检索算法与数据加载核心
+ai_search.py                      DeepSeek 查询改写、RAG 综述和追问逻辑
+requirements.txt                  Python 依赖
+run_quick_benchmarks.py           快速基准测试脚本
+run_end2end_test.py               端到端测试脚本
+scripts/setup_env.ps1             Windows 一键环境准备脚本
+data/sample_arxiv_20000.jsonl     20000 条 arXiv 样例数据
+data/arxiv.db                     SQLite 数据库文件
+data/benchmarks_summary.csv       基准测试结果摘要
+database/create_database.py       数据库建表脚本
+database/import_data.py           JSONL 数据导入数据库脚本
+database/db_config.py             MySQL 连接配置，默认从环境变量读取
 ```
 
-说明：
-- 在侧边栏选择算法（TF-IDF 或 BM25），输入查询并点击搜索。
-- 内置测试数据为 `data/sample_arxiv_20000.jsonl`。
-- 如果要用你自己的数据，请放置 JSONL 文件到 `data/` 目录，格式与 `data/sample_arxiv_20000.jsonl` 类似（每行一个 JSON 对象，包含 `id`, `title`, `abstract`, `authors`, `categories`, `update_date`）。
+本仓库没有提交 arXiv 原始完整快照文件，只保留课程演示所需的 20000 条样例数据和对应 SQLite 数据库。
 
-**如何使用检索系统**
+## 快速运行
 
-- **先决条件:** Python 3.8+，在项目根目录下推荐使用虚拟环境。依赖在 [requirements.txt](requirements.txt) 中列出。
-- **一键准备（Windows PowerShell）:** 推荐运行一键脚本来创建虚拟环境、安装依赖并导入示例数据：
+推荐使用 Python 3.8 或更高版本。Windows PowerShell 下可以按下面步骤运行：
 
 ```powershell
-powershell -ExecutionPolicy ByPass -File "scripts/setup_env.ps1"
-```
-
-- **手动步骤（可选）:**
-
-```bash
-# 创建并激活虚拟环境（Windows PowerShell 示例）
+cd ArXiv-Smart-Search
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-
-# 可选：初始化数据库（尝试 MySQL，失败则回退到 SQLite）
-python database/create_database.py
-
-# 将示例 JSONL 导入数据库（或指定你自己的 JSONL）
-python database/import_data.py --input data/sample_arxiv_20000.jsonl --limit 20000 --batch 500
-```
-
-- **运行 Demo（Streamlit）:**
-
-```bash
 streamlit run app_streamlit.py --server.port 8502
 ```
 
-- **在应用中切换算法:**
-	- 启动后在侧边栏选择算法：TF-IDF / BM25 / Sentence-BERT（SBERT）。
-	- TF-IDF 与 BM25 在线构建索引；SBERT 第一次运行会从 Hugging Face 下载模型并计算嵌入，可能会较慢并占用更多内存。
+启动后在浏览器打开：
 
-**基准测试与算法说明**
+```text
+http://localhost:8502
+```
 
-- 我已针对 1k 与 10k 文档规模运行快速基准，结果保存为 `data/benchmarks_summary.csv`。关键结果（50 queries/sample）：
-	- 1k:
-		- TF-IDF: 构建 0.485s，平均查询 0.0021s
-		- BM25:  构建 0.089s，平均查询 0.0058s
-		- SBERT: 构建 60.58s，平均查询 0.0269s
-	- 10k:
-		- TF-IDF: 构建 8.37s，平均查询 0.0426s
-		- BM25:  构建 1.87s，平均查询 0.1396s
-		- SBERT: 构建 377.79s，平均查询 0.0285s
+如果不想手动配置环境，也可以运行脚本：
 
-- 算法实现要点：
-	- TF-IDF: 使用 `sklearn.feature_extraction.text.TfidfVectorizer`，默认参数中使用 `ngram_range=(1,2)`, `min_df=2`, `max_df=0.95`，向量余弦相似度使用 `linear_kernel` 计算。
-	- BM25: 使用 `rank_bm25.BM25Okapi`，对 `title_abstract` 字段先做 `tokenize_and_filter()`（去停用词、短词过滤），然后基于 BM25 分数检索并可选归一化到 [0,1]。
-	- SBERT: 使用 `sentence-transformers/all-MiniLM-L6-v2` 生成句向量（`normalize_embeddings=True`），当前实现为暴力向量点积检索；我已在代码中添加可选的 FAISS HNSW 接口用于大规模加速（构建/加载/搜索方法位于 `search_backend.py`）。
+```powershell
+powershell -ExecutionPolicy ByPass -File "scripts/setup_env.ps1"
+streamlit run app_streamlit.py --server.port 8502
+```
 
-- 注意事项：SBERT 首次构建会下载模型并花费较长时间，建议在生产或大规模实验中先构建并保存嵌入与 FAISS 索引以加速查询。
+## 数据说明
 
+默认数据文件为：
 
-- **关于 SBERT:**
-	- 推荐模型: `sentence-transformers/all-MiniLM-L6-v2`（默认）。首次使用需联网下载模型权重。
-	- 若机器内存受限，可优先使用 TF-IDF 或 BM25。
+```text
+data/sample_arxiv_20000.jsonl
+```
 
-- **关于数据库（可选 MySQL）:**
-	- 如需连接 MySQL，请通过环境变量设置连接信息：`ARXIV_DB_HOST`、`ARXIV_DB_USER`、`ARXIV_DB_PASSWORD`、`ARXIV_DB_NAME`、`ARXIV_DB_CHARSET`。脚本会尝试使用 `pymysql` 连接，失败时自动回退到本地 SQLite（`data/arxiv.db`）。
-	- 大模型接口也建议使用环境变量配置：`DEEPSEEK_API_KEY`、`DEEPSEEK_BASE_URL`、`DEEPSEEK_MODEL`。默认接口地址为 `https://api.deepseek.com`，默认模型为 `deepseek-v4-pro`。
+该文件每行是一篇论文的 JSON 对象，主要字段包括：
 
-- **示例文件与位置:**
-	- 应用入口: [app_streamlit.py](app_streamlit.py)
-	- 后端检索实现: [search_backend.py](search_backend.py)
-	- 数据库相关: [database/create_database.py](database/create_database.py), [database/import_data.py](database/import_data.py)
-	- 示例数据: [data/sample_arxiv_20000.jsonl](data/sample_arxiv_20000.jsonl)（默认内置），SQLite 文件: [data/arxiv.db](data/arxiv.db)
+```text
+id, title, abstract, authors, categories, update_date, versions, authors_parsed
+```
 
-**推荐的检索逻辑（实践建议）**
+项目还包含 SQLite 数据库：
 
-- **两阶段检索（推荐，准确且高效）**: 先用轻量级的倒排/稀疏检索（BM25 或 TF‑IDF）快速筛出候选集（如 top‑100），再用 SBERT 向量对候选集重排（re‑ranking），兼顾召回与语义精度且节省向量计算成本。
-- **全量向量检索（低延迟、大规模）**: 对于需要在几十万或更多文档上低延迟返回，先用 SBERT 生成并持久化嵌入，再用 FAISS（HNSW 或 IVF+PQ）做 ANN 检索；HNSW 简单易上手，IVF+PQ 在超大规模时更节省空间。
-- **缓存与持久化**: 持久化 `tfidf` 向量化器（`joblib.dump`）和稀疏矩阵（`scipy.sparse.save_npz`），以及 SBERT 嵌入（`.npy`）和 FAISS 索引（`.index`），启动时按需加载以减少重复构建成本。
-- **工程实践**: 将批量嵌入/索引构建作为离线任务（cron / CI），查询服务只做加载索引与快速检索；当资源紧张时优先使用 BM25/TF‑IDF 在线搜索并在后台异步构建向量索引。
+```text
+data/arxiv.db
+```
 
-**仓库中主要文件说明**
+其中 `papers` 表包含同样的 20000 条论文记录。前端默认读取 JSONL；如果在侧边栏勾选“使用 MySQL 数据库”，系统会先尝试连接 MySQL，失败后自动读取 `data/arxiv.db`。
 
-- [app_streamlit.py](app_streamlit.py): 前端演示（Streamlit），算法切换、查询界面与结果展示。
-- [search_backend.py](search_backend.py): 后端检索核心，实现 TF‑IDF、BM25、SBERT（暴力向量检索）与可选 FAISS（HNSW）构建/加载/搜索接口。
-- [run_quick_benchmarks.py](run_quick_benchmarks.py): 快速基准测试脚本（1k/10k 测试）。
-- [run_end2end_test.py](run_end2end_test.py): 端到端验证脚本（初始化检索、示例查询、SBERT 子集测试）。
-- [data/benchmarks_summary.csv](data/benchmarks_summary.csv): 本次基准结果摘要（1k / 10k）。
-- [data/sample_arxiv_20000.jsonl](data/sample_arxiv_20000.jsonl): 用于测试的计算机领域 20k 抽样数据（演示用）。
-- [data/arxiv-metadata-oai-snapshot.json](data/arxiv-metadata-oai-snapshot.json): 原始完整快照（未经全部处理，大文件）。
-- [database/create_database.py](database/create_database.py): 初始化数据库（优先 MySQL，失败回退 SQLite）并创建 `papers` 表。
-- [database/import_data.py](database/import_data.py): 统一的导入脚本，支持 `--to auto|mysql|sqlite|both`，批量导入 JSONL 到数据库并做字段清洗/映射。
-- [database/db_config.py](database/db_config.py): MySQL 连接配置（本地示例，部署时请修改凭据）。
-- [scripts/setup_env.ps1](scripts/setup_env.ps1): 一键准备脚本（创建虚拟环境、安装依赖、初始化 DB、导入示例数据）。
-- [requirements.txt](requirements.txt): Python 依赖列表。
+## 数据库配置
 
+MySQL 是可选项。需要连接 MySQL 时，可以通过环境变量配置：
 
-- **常见问题 / 排错:**
-	- 如果 Streamlit 页面未显示结果，确认虚拟环境已激活且依赖安装正确；在项目根目录执行 `pip install -r requirements.txt`。
-	- SBERT 报错通常与内存或模型下载失败有关，检查网络与可用内存；可先用 TF-IDF 或 BM25 进行演示。
-	- 如果导入数据过程中出现 MySQL 权限错误，脚本会提示并回退到 SQLite；如需 MySQL 请检查 `database/db_config.py` 的用户名/密码与数据库权限。
+```powershell
+$env:ARXIV_DB_HOST="localhost"
+$env:ARXIV_DB_USER="root"
+$env:ARXIV_DB_PASSWORD="your_password"
+$env:ARXIV_DB_NAME="arxiv_db"
+$env:ARXIV_DB_CHARSET="utf8mb4"
+```
 
+如果没有 MySQL 或配置失败，系统会自动回退到 SQLite，不影响演示运行。
+
+如需重新生成数据库，可以运行：
+
+```powershell
+python database/create_database.py
+python database/import_data.py --input data/sample_arxiv_20000.jsonl --limit 20000 --batch 500 --to auto
+```
+
+## 增强检索配置
+
+增强检索功能需要 DeepSeek API Key。可以在页面侧边栏直接填写，也可以通过环境变量配置：
+
+```powershell
+$env:DEEPSEEK_API_KEY="your_api_key"
+$env:DEEPSEEK_BASE_URL="https://api.deepseek.com"
+$env:DEEPSEEK_MODEL="deepseek-v4-pro"
+```
+
+如果没有配置 API Key，传统检索功能仍然可以正常使用。
+
+## 检索算法说明
+
+- TF-IDF：使用 `sklearn.feature_extraction.text.TfidfVectorizer`，通过余弦相似度计算查询和论文文本之间的相关性。
+- BM25：使用 `rank_bm25.BM25Okapi`，适合关键词检索和短查询。
+- Sentence-BERT：使用 `sentence-transformers/all-MiniLM-L6-v2` 生成语义向量，适合语义相近但词面不同的查询。
+- FAISS：后端代码中保留了可选的 FAISS HNSW 接口，用于后续扩展大规模向量检索。
+
+首次使用 Sentence-BERT 时需要联网下载模型，速度会比 TF-IDF 和 BM25 慢。课堂演示时建议优先使用 TF-IDF 或 BM25，确认环境稳定后再测试 Sentence-BERT。
+
+## 基准测试结果
+
+快速基准测试结果保存在：
+
+```text
+data/benchmarks_summary.csv
+```
+
+摘要结果如下：
+
+| 数据规模 | 算法 | 构建时间 | 平均查询时间 |
+|---|---:|---:|---:|
+| 1k | TF-IDF | 0.485s | 0.0021s |
+| 1k | BM25 | 0.089s | 0.0058s |
+| 1k | SBERT | 60.58s | 0.0269s |
+| 10k | TF-IDF | 8.37s | 0.0426s |
+| 10k | BM25 | 1.87s | 0.1396s |
+| 10k | SBERT | 377.79s | 0.0285s |
+
+## 常见问题
+
+### 页面启动后没有结果
+
+先确认依赖已经安装，并且在项目根目录运行：
+
+```powershell
+pip install -r requirements.txt
+streamlit run app_streamlit.py --server.port 8502
+```
+
+### 勾选数据库后报 MySQL 错误
+
+正常情况下不会中断运行。系统会先尝试 MySQL，失败后回退到：
+
+```text
+data/arxiv.db
+```
+
+如果仍然报错，请确认 `data/arxiv.db` 文件存在。
+
+### Sentence-BERT 很慢
+
+这是正常现象。首次运行需要下载模型并计算嵌入。演示时可以先使用 TF-IDF 或 BM25。
+
+### DeepSeek 不可用
+
+检查 API Key 是否填写正确，或先关闭增强检索功能。传统检索不依赖 API Key。
