@@ -55,6 +55,15 @@ st.markdown("""
     --shadow-card-hover: 0 22px 54px rgba(53,77,102,0.14);
 }
 
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
 /* ============================================================
    BASE & TYPOGRAPHY
    ============================================================ */
@@ -84,6 +93,7 @@ st.markdown("""
 .main .block-container {
     position: relative;
     z-index: 1;
+    max-width: 1180px;
 }
 body, .stMarkdown, .stText {
     font-family: 'IBM Plex Sans', 'Microsoft YaHei', -apple-system, sans-serif;
@@ -159,6 +169,12 @@ header[data-testid="stHeader"] { background: transparent !important; }
     font-size: 0.76rem; color: #7c8792;
     font-family: 'JetBrains Mono', monospace;
 }
+.app-header-subtitle {
+    display: none;
+    font-size: 0.72rem;
+    color: #7c8792;
+    margin-top: 0.15rem;
+}
 
 /* ============================================================
    HERO SECTION
@@ -178,6 +194,15 @@ header[data-testid="stHeader"] { background: transparent !important; }
     animation: fadeInUp 0.42s ease both;
 }
 .hero-icon { display: none; }
+.hero-kicker {
+    color: #4f6f8f;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.35rem;
+    text-transform: uppercase;
+}
 .hero-container::after {
     content: "";
     position: absolute;
@@ -287,7 +312,8 @@ header[data-testid="stHeader"] { background: transparent !important; }
 /* Focus ring override */
 .stApp .stButton > button:focus,
 .stApp .stButton > button:focus-visible {
-    outline: none !important;
+    outline: 2px solid rgba(79,111,143,0.45) !important;
+    outline-offset: 2px !important;
     box-shadow: 0 0 0 3px rgba(79,111,143,0.18) !important;
 }
 .stApp .stButton > button[kind="primary"]:focus,
@@ -316,8 +342,8 @@ button[data-testid="stBaseButton-primary"]:focus-visible {
         radial-gradient(circle at 100% 0%, rgba(215,195,124,0.10), transparent 32%);
     border: 1px solid rgba(119,137,153,0.20);
     border-radius: 10px;
-    padding: 1.25rem 1.5rem 0.1rem;
-    margin-bottom: 1rem;
+    padding: 1.05rem 1.35rem 0.05rem;
+    margin-bottom: 0.82rem;
     position: relative;
     backdrop-filter: blur(16px);
     box-shadow: var(--shadow-card);
@@ -325,7 +351,7 @@ button[data-testid="stBaseButton-primary"]:focus-visible {
     animation: fadeInUp 0.42s cubic-bezier(.2,.75,.25,1) both;
 }
 .paper-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-2px);
     box-shadow: var(--shadow-card-hover);
     border-color: rgba(79,111,143,0.32);
 }
@@ -336,12 +362,15 @@ button[data-testid="stBaseButton-primary"]:focus-visible {
 }
 
 .card-title {
-    font-size: 1rem; font-weight: 600; color: #202936;
-    line-height: 1.4; margin-bottom: 0.5rem;
+    font-family: 'Noto Serif SC', 'IBM Plex Sans', serif;
+    font-size: 1.04rem; font-weight: 700; color: #202936;
+    line-height: 1.38; margin: 0.18rem 5.5rem 0.45rem 0;
+    text-wrap: pretty;
 }
 .card-cats { margin-bottom: 0.5rem; }
 .card-meta {
     font-size: 0.8rem; color: #52606d; margin-bottom: 0.3rem;
+    overflow-wrap: anywhere;
 }
 .card-divider {
     height: 1px; background: linear-gradient(90deg, rgba(119,137,153,0.18), rgba(215,195,124,0.22), transparent); margin: 0.6rem 0;
@@ -349,6 +378,14 @@ button[data-testid="stBaseButton-primary"]:focus-visible {
 .card-abstract {
     font-size: 0.83rem; color: #52606d; line-height: 1.6;
     margin-bottom: 0.8rem;
+    overflow-wrap: anywhere;
+}
+.rank-label {
+    color: #4f6f8f;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    margin-right: 0.45rem;
 }
 
 .score-badge {
@@ -399,12 +436,45 @@ button[data-testid="stBaseButton-primary"]:focus-visible {
     box-shadow: 0 10px 28px rgba(53,77,102,0.055);
     backdrop-filter: blur(14px);
 }
+.results-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 1.1rem 0 0.65rem;
+}
+.section-label {
+    color: #7c8792;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.section-title {
+    color: #202936;
+    font-family: 'Noto Serif SC', 'IBM Plex Sans', serif;
+    font-size: 1.12rem;
+    font-weight: 700;
+    margin-top: 0.1rem;
+}
+.results-summary {
+    color: #52606d;
+    font-size: 0.82rem;
+    text-align: right;
+}
+.search-row-note {
+    color: #7c8792;
+    font-size: 0.76rem;
+    margin: -0.25rem 0 0.75rem;
+}
 
 /* ============================================================
    DETAIL PAGE
    ============================================================ */
 .breadcrumb {
-    font-size: 0.82rem; color: #7c8792; margin-bottom: 1rem;
+    font-size: 0.82rem; color: #7c8792; margin-bottom: 0.75rem;
+    display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;
 }
 
 .detail-hero {
@@ -413,8 +483,8 @@ button[data-testid="stBaseButton-primary"]:focus-visible {
         radial-gradient(circle at 92% 0%, rgba(215,195,124,0.16), transparent 36%);
     border: 1px solid rgba(119,137,153,0.20);
     border-radius: 10px;
-    padding: 2rem 2.5rem;
-    margin-bottom: 1.5rem;
+    padding: 1.7rem 2rem;
+    margin-bottom: 0.85rem;
     position: relative; overflow: hidden;
     box-shadow: 0 18px 48px rgba(53,77,102,0.08);
     backdrop-filter: blur(16px);
@@ -427,12 +497,16 @@ button[data-testid="stBaseButton-primary"]:focus-visible {
 }
 .detail-hero-title {
     font-family: 'Noto Serif SC', 'IBM Plex Sans', serif;
-    font-size: 1.5rem; font-weight: 700; color: #202936;
+    font-size: 1.48rem; font-weight: 700; color: #202936;
     line-height: 1.35; margin-bottom: 0.75rem;
+    text-wrap: pretty;
 }
 .detail-hero-meta {
     font-size: 0.85rem; color: #52606d;
-    display: flex; gap: 1.5rem; flex-wrap: wrap;
+    display: flex; gap: 0.85rem; flex-wrap: wrap;
+}
+.source-link-row {
+    margin: 0.25rem 0 1.15rem;
 }
 
 .abstract-panel {
@@ -442,11 +516,25 @@ button[data-testid="stBaseButton-primary"]:focus-visible {
     box-shadow: 0 12px 34px rgba(53,77,102,0.06);
     backdrop-filter: blur(14px);
 }
-.abstract-panel h3 {
+.abstract-panel h3,
+.metadata-panel h3 {
     font-size: 0.85rem; font-weight: 600; color: #4f6f8f;
     text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;
 }
 .abstract-panel .paper-abstract { font-size: 0.88rem; color: #2d3742; line-height: 1.7; }
+.metadata-panel {
+    background: rgba(255,255,255,0.68);
+    border: 1px solid rgba(119,137,153,0.20);
+    border-radius: 8px;
+    padding: 1.25rem;
+    box-shadow: 0 10px 28px rgba(53,77,102,0.055);
+    backdrop-filter: blur(14px);
+}
+.metadata-empty {
+    color: #7c8792;
+    font-size: 0.82rem;
+    line-height: 1.55;
+}
 
 .meta-item {
     background: rgba(255,255,255,0.72); border: 1px solid rgba(119,137,153,0.20);
@@ -547,6 +635,62 @@ button[data-testid="stBaseButton-primary"]:focus-visible {
 [data-testid="stSidebar"] [data-baseweb="radio"] label,
 [data-testid="stSidebar"] [data-baseweb="toggle"] label {
     color: #202936 !important;
+}
+[data-testid="stSidebar"] label[data-baseweb="checkbox"] > div {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+[data-testid="stSidebar"] label[data-baseweb="checkbox"] > span:first-child {
+    border-color: rgba(119,137,153,0.34) !important;
+    background: rgba(255,255,255,0.72) !important;
+}
+[data-testid="stSidebar"] label[data-baseweb="checkbox"]:has(input[type="checkbox"]:checked) > span:first-child {
+    background-color: #4f6f8f !important;
+    border-color: #4f6f8f !important;
+    box-shadow: 0 0 0 3px rgba(79,111,143,0.12) !important;
+}
+[data-testid="stSidebar"] label[data-baseweb="checkbox"]:has(input[type="checkbox"]:checked) > span:first-child svg {
+    color: #ffffff !important;
+    fill: #ffffff !important;
+}
+[data-testid="stSidebar"] [data-testid="stCheckbox"] p {
+    background: transparent !important;
+}
+[data-testid="stSidebar"] button[aria-label^="Help for"] {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 0.95rem !important;
+    height: 0.95rem !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+[data-testid="stSidebar"] [data-testid="stTooltipIcon"] {
+    color: #4f6f8f !important;
+}
+[data-testid="stSidebar"] [data-testid="stTooltipIcon"] svg,
+[data-testid="stSidebar"] button[aria-label^="Help for"] svg {
+    width: 0.88rem !important;
+    height: 0.88rem !important;
+    color: #4f6f8f !important;
+    fill: none !important;
+    stroke: #4f6f8f !important;
+}
+[data-testid="stSidebar"] .data-mode-status {
+    margin: 0.45rem 0 0.35rem;
+    padding: 0.55rem 0.68rem;
+    border-radius: 8px;
+    border: 1px solid rgba(79,111,143,0.28);
+    background: rgba(235,242,247,0.66);
+    color: #395872;
+    font-size: 0.78rem;
+    line-height: 1.45;
+}
+[data-testid="stSidebar"] .data-mode-status strong {
+    color: #202936;
+    font-weight: 650;
 }
 [data-testid="stSidebar"] [data-baseweb="toggle"] [role="switch"] {
     background: #aaa194 !important;
@@ -678,7 +822,7 @@ button[data-testid="stBaseButton-pillsActive"] {
     background: transparent;
     border: none;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
     white-space: nowrap;
 }
 .mode-switch-btn.active {
@@ -785,6 +929,53 @@ button[data-testid="stBaseButton-pillsActive"] {
     color: #52606d;
     font-size: 0.9rem;
 }
+
+@media (max-width: 760px) {
+    [data-testid="stMainBlockContainer"],
+    .main .block-container {
+        padding-left: 0.8rem !important;
+        padding-right: 0.8rem !important;
+    }
+    .app-header {
+        align-items: flex-start;
+        padding: 0.7rem 0.8rem;
+        top: 0.35rem;
+    }
+    .app-stats {
+        display: none;
+    }
+    .app-header-subtitle {
+        display: block;
+    }
+    .hero-container {
+        padding: 1.05rem;
+    }
+    .hero-title {
+        font-size: 1.28rem;
+    }
+    .detail-hero {
+        padding: 1.2rem;
+    }
+    .detail-hero-title {
+        font-size: 1.22rem;
+    }
+    .card-title {
+        margin-right: 0;
+        font-size: 0.98rem;
+    }
+    .score-badge {
+        position: static;
+        display: inline-block;
+        margin-bottom: 0.45rem;
+    }
+    .results-toolbar {
+        display: block;
+    }
+    .results-summary {
+        text-align: left;
+        margin-top: 0.35rem;
+    }
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -802,6 +993,8 @@ for key, default in [
     ("ai_enhanced_keywords", ""), ("ai_enhance_explanation", ""),
     ("ai_answer", ""), ("ai_chat_history", []),
     ("ai_answer_length", "标准"),
+    ("data_loaded_once", False),
+    ("pending_clear_search", False),
 ]:
     if key not in st.session_state:
         st.session_state[key] = default
@@ -899,19 +1092,33 @@ def run_search_with_filters(base_docs, base_engine, query, method, limit, model_
     return search_engine.search_sbert(query, top_k=limit, model_name=model_name)
 
 
+def go_to_search_results():
+    st.session_state.page = "search"
+    st.session_state.selected_paper = None
+
+
+def open_paper_detail(paper):
+    st.session_state.selected_paper = paper
+    st.session_state.page = "detail"
+
+
 # ===== SIDEBAR =====
 with st.sidebar:
     st.markdown('<div class="sidebar-brand">arXiv Research Search</div>', unsafe_allow_html=True)
 
     with st.expander("数据源", expanded=True):
-        use_mysql = st.checkbox("使用 MySQL 数据库", value=False, help="取消勾选则从 JSONL 文件加载")
+        use_mysql = st.checkbox("使用数据库", value=False, help="启用后优先连接 MySQL；连接失败时自动回退到本地 SQLite 数据库。")
         if use_mysql:
             data_source = "__mysql__"
-            max_docs = st.number_input("最大文档数 (0=全部)", 0, 50000, 0, 100, help="0 = 加载全部文档")
+            st.markdown(
+                '<div class="data-mode-status"><strong>数据库模式已启用</strong><br>优先 MySQL，失败后自动回退 SQLite。</div>',
+                unsafe_allow_html=True
+            )
+            max_docs = st.number_input("最大文档数", 0, 50000, 0, 100, help="0 表示加载全部文档；数据库模式下会对实际载入数量生效。")
         else:
             data_file = st.text_input("数据路径", DEFAULT_DATA, label_visibility="collapsed")
             data_source = data_file
-            max_docs = st.number_input("最大文档数 (0=全部)", 0, 50000, 500, 100, help="0 = 加载全部文档")
+            max_docs = st.number_input("最大文档数", 0, 50000, 500, 100, help="0 表示加载全部文档；默认读取本地 JSONL 样本文档。")
 
     with st.expander("检索算法", expanded=True):
         algo = st.radio("检索算法", ["TF-IDF + Cosine", "BM25", "Sentence-BERT"],
@@ -990,10 +1197,7 @@ with st.sidebar:
     st.divider()
     st.caption("arXiv Research Search v1.0")
 
-    if st.button("← 返回检索", use_container_width=True):
-        st.session_state.page = "search"
-        st.session_state.selected_paper = None
-        st.rerun()
+    st.button("← 返回检索", use_container_width=True, on_click=go_to_search_results)
 
 
 # ===== LOAD DATA =====
@@ -1006,6 +1210,9 @@ if st.session_state.docs is None:
     with st.spinner(f"加载论文数据 ({source_label})..."):
         st.session_state.docs, st.session_state.engine = load_engine(data_source, max_docs)
     st.toast(f"✅ 已加载 {len(st.session_state.docs)} 篇论文", icon="📄")
+    if not st.session_state.data_loaded_once:
+        st.session_state.data_loaded_once = True
+        st.rerun()
 
 engine = st.session_state.engine
 
@@ -1014,7 +1221,10 @@ engine = st.session_state.engine
 stats = engine.get_stats() if engine else {}
 st.markdown(f"""
     <div class="app-header">
-    <div class="app-logo">arXiv <span>Research Search</span></div>
+    <div>
+        <div class="app-logo">arXiv <span>Research Search</span></div>
+        <div class="app-header-subtitle">论文检索 · 推荐 · 增强问答</div>
+    </div>
     <div class="app-stats">{stats.get('num_docs', '—')} papers · TF-IDF · BM25</div>
 </div>
 """, unsafe_allow_html=True)
@@ -1027,15 +1237,12 @@ if st.session_state.page == "detail" and st.session_state.selected_paper:
     # Breadcrumb
     st.markdown(f"""
     <div class="breadcrumb">
-        <a href="javascript:void(0)">arXiv 检索</a> &nbsp;›&nbsp; 论文详情 &nbsp;›&nbsp;
+        <span>arXiv 检索</span><span>›</span><span>论文详情</span><span>›</span>
         <span style="color:#7c8792;">{safe_html(paper.get('id',''))}</span>
     </div>
     """, unsafe_allow_html=True)
 
-    if st.button("← 返回检索结果", key="back_from_detail"):
-        st.session_state.page = "search"
-        st.session_state.selected_paper = None
-        st.rerun()
+    st.button("← 返回检索结果", key="back_from_detail", on_click=go_to_search_results)
 
     # Hero header
     cats = (paper.get("categories") or "").split()
@@ -1063,11 +1270,13 @@ if st.session_state.page == "detail" and st.session_state.selected_paper:
     if raw_arxiv_id:
         arxiv_abs_url = f"https://arxiv.org/abs/{raw_arxiv_id}"
         arxiv_pdf_url = f"https://arxiv.org/pdf/{raw_arxiv_id}"
+        st.markdown('<div class="source-link-row">', unsafe_allow_html=True)
         link_col1, link_col2, link_col3 = st.columns([1, 1, 4])
         with link_col1:
             st.link_button("arXiv 摘要页", arxiv_abs_url, use_container_width=True)
         with link_col2:
             st.link_button("PDF 原文", arxiv_pdf_url, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     # Content grid: abstract + metadata
     col_left, col_right = st.columns([2, 1])
@@ -1081,6 +1290,7 @@ if st.session_state.page == "detail" and st.session_state.selected_paper:
         """, unsafe_allow_html=True)
 
     with col_right:
+        st.markdown('<div class="metadata-panel"><h3>Metadata</h3>', unsafe_allow_html=True)
         meta_fields = [
             ("DOI", paper.get("doi", "")),
             ("Journal Ref", paper.get("journal_ref", "")),
@@ -1089,14 +1299,19 @@ if st.session_state.page == "detail" and st.session_state.selected_paper:
             ("License", paper.get("license", "")),
             ("Submitter", paper.get("submitter", "")),
         ]
+        rendered_meta = False
         for label, val in meta_fields:
             if val:
+                rendered_meta = True
                 st.markdown(f"""
                 <div class="meta-item">
                     <div class="meta-label">{safe_html(label)}</div>
                     <div class="meta-value">{safe_html(val)}</div>
                 </div>
                 """, unsafe_allow_html=True)
+        if not rendered_meta:
+            st.markdown('<div class="metadata-empty">该论文在当前样例数据中没有 DOI、期刊引用或提交者等扩展元数据。</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     # Similar papers
     st.divider()
@@ -1128,9 +1343,7 @@ if st.session_state.page == "detail" and st.session_state.selected_paper:
                     <span class="similar-card-score">相似度 {sscore:.4f}</span>
                 </div>
                 """, unsafe_allow_html=True)
-                if st.button("查看详情", key=f"sim_{si}"):
-                    st.session_state.selected_paper = sdoc
-                    st.rerun()
+                st.button("查看详情", key=f"sim_{si}", on_click=open_paper_detail, args=(sdoc,))
     else:
         st.caption("暂无相似推荐")
 
@@ -1145,9 +1358,7 @@ if st.session_state.page == "chat":
     # Back button + header
     bc1, bc2 = st.columns([1, 5])
     with bc1:
-        if st.button("← 返回检索结果", key="back_from_chat", use_container_width=True):
-            st.session_state.page = "search"
-            st.rerun()
+        st.button("← 返回检索结果", key="back_from_chat", use_container_width=True, on_click=go_to_search_results)
     with bc2:
         st.markdown(f"""
         <div style="background:#f6f9fb;border:1px solid rgba(119,137,153,0.22);border-radius:8px;padding:0.7rem 1rem;">
@@ -1241,7 +1452,7 @@ def render_card(rank, doc, score):
     <div class="paper-card" style="animation-delay:{rank * 0.04}s">
         <span class="score-badge">{score:.4f}</span>
         <div class="card-cats">{cats_html}</div>
-        <div class="card-title">#{rank} &nbsp;{title}</div>
+        <div class="card-title"><span class="rank-label">#{rank}</span> {title}</div>
         <div class="card-meta">Authors: {authors}{'...' if len(doc.get('authors','')) > 80 else ''}</div>
         <div class="card-meta">Date: {update_date} &nbsp;|&nbsp; ID: {paper_id}</div>
         <div class="card-divider"></div>
@@ -1251,10 +1462,7 @@ def render_card(rank, doc, score):
 
     with st.container():
         st.markdown('<div class="card-action-btn">', unsafe_allow_html=True)
-        if st.button("查看详情 →", key=f"det_{rank}_{doc.get('id')}"):
-            st.session_state.selected_paper = doc
-            st.session_state.page = "detail"
-            st.rerun()
+        st.button("查看详情 →", key=f"det_{rank}_{doc.get('id')}", on_click=open_paper_detail, args=(doc,))
         st.markdown('</div>', unsafe_allow_html=True)
 
 
@@ -1280,7 +1488,7 @@ api_configured = bool(
 if not has_results:
     st.markdown("""
     <div class="hero-container">
-        <div class="hero-icon">📖</div>
+        <div class="hero-kicker">Academic Retrieval Workspace</div>
         <div class="hero-title">论文检索工作台</div>
         <div class="hero-desc">
             面向计算机科学论文的检索、筛选与结果追问。当前样本库包含 <strong>20,000</strong> 篇 arXiv 论文，支持
@@ -1370,8 +1578,12 @@ if st.session_state.ai_enabled:
 else:
     placeholder_text = "输入英文关键词，如: large language model, image segmentation..."
 
+if st.session_state.pending_clear_search:
+    st.session_state.search_input = ""
+    st.session_state.pending_clear_search = False
+
 if has_results:
-    sc1, sc2 = st.columns([5, 1])
+    sc1, sc2, sc3 = st.columns([5, 1, 1])
     with sc1:
         query = st.text_input(
             "search", placeholder=placeholder_text,
@@ -1380,6 +1592,19 @@ if has_results:
         )
     with sc2:
         search_btn = st.button("搜 索", type="primary", use_container_width=True, key="search_btn")
+    with sc3:
+        if st.button("清空", use_container_width=True, key="clear_search"):
+            st.session_state.last_results = []
+            st.session_state.last_query = ""
+            st.session_state.last_advanced_signature = ""
+            st.session_state.ai_answer = ""
+            st.session_state.ai_enhanced_keywords = ""
+            st.session_state.ai_enhance_explanation = ""
+            st.session_state.selected_paper = None
+            st.session_state.page = "search"
+            st.session_state.pending_clear_search = True
+            st.rerun()
+    st.markdown('<div class="search-row-note">修改关键词后按 Enter 或点击搜索即可刷新结果。</div>', unsafe_allow_html=True)
 else:
     query = st.text_input(
         "search", placeholder=placeholder_text,
@@ -1628,11 +1853,13 @@ if has_results:
                 st.session_state.page = "chat"
                 st.rerun()
 
-    st.markdown("""
-    <div style="display:flex;align-items:center;gap:0.6rem;margin:1.2rem 0 0.8rem;">
-        <div style="flex:1;height:1px;background:rgba(119,137,153,0.22);"></div>
-        <span style="font-size:0.8rem;color:#7c8792;white-space:nowrap;font-weight:500;">📚 论文检索结果</span>
-        <div style="flex:1;height:1px;background:rgba(119,137,153,0.22);"></div>
+    st.markdown(f"""
+    <div class="results-toolbar">
+        <div>
+            <div class="section-label">Search Results</div>
+            <div class="section-title">论文检索结果</div>
+        </div>
+        <div class="results-summary">查询：<strong>{safe_html(st.session_state.last_query or query or '高级检索')}</strong></div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1741,13 +1968,6 @@ if has_results:
         """, unsafe_allow_html=True)
         st.stop()
 
-    # Render cards in 2-column grid
-    for i in range(0, len(sorted_results), 2):
-        c1, c2 = st.columns(2)
-        with c1:
-            idx, score, doc = sorted_results[i]
-            render_card(i + 1, doc, score)
-        with c2:
-            if i + 1 < len(sorted_results):
-                idx, score, doc = sorted_results[i + 1]
-                render_card(i + 2, doc, score)
+    # Render cards in a single-column literature database layout.
+    for i, (_, score, doc) in enumerate(sorted_results, start=1):
+        render_card(i, doc, score)
